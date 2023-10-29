@@ -9,3 +9,4 @@ import getters
 
 print(getters.get_plot_size('86a40223-53e6-44d4-969f-f102a89b81d0'))
 print(getters.get_money('86a40223-53e6-44d4-969f-f102a89b81d0'))
+print(getters.get_plots('86a40223-53e6-44d4-969f-f102a89b81d0'))
