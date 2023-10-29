@@ -1,6 +1,6 @@
 import sb_client
 
-def get_plot_size(player_uuid: str):
+def get_plot_size(player_uuid: str) -> int:
     response = sb_client.supabase.table('player_data').select('plot_size').eq('id', player_uuid).execute()
     return response.data[0]['plot_size']
 
