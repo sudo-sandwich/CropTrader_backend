@@ -20,6 +20,7 @@ def create_farmer(username: str):
 
     response = sb_client.supabase.table('player_data').insert({
         'username': username,
+        'password': 'asdf',
         'seeds': start_seed_count,
     }).execute()
 
