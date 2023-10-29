@@ -1,3 +1,5 @@
+import json
+
 import farmer_actions
 from http_server import app
 import player_exceptions
@@ -25,4 +27,6 @@ import getters
 # farmer_actions.create_farmer("Poe")
 
 if __name__ == '__main__':
-    app.run(host='170.187.142.125', port=5000)
+    with open('ip_port.json', 'r') as ip_port_json:
+        ip_port = json.load(ip_port_json)
+    app.run(host=ip_port['ip'], port=ip_port['port'])

@@ -24,7 +24,12 @@ def get_plot_size():
     elif not is_valid_uuid(player_uuid):
         return jsonify({'error': 'player_uuid is not valid'})
     
-    return jsonify({'plot_size': getters.get_plot_size(player_uuid)})
+    try:
+        plot_size = getters.get_plot_size(player_uuid)
+    except getters.UUIDNotFoundException as e:
+        return jsonify({'error': str(e)})
+    
+    return jsonify({'plot_size': plot_size})
 
 @app.route('/get_money', methods=['GET'])
 def get_money():
@@ -38,7 +43,12 @@ def get_money():
     elif not is_valid_uuid(player_uuid):
         return jsonify({'error': 'player_uuid is not valid'})
     
-    return jsonify({'money': getters.get_money(player_uuid)})
+    try:
+        money = getters.get_money(player_uuid)
+    except getters.UUIDNotFoundException as e:
+        return jsonify({'error': str(e)})
+    
+    return jsonify({'money': money})
 
 @app.route('/get_seeds', methods=['GET'])
 def get_seeds():
@@ -52,7 +62,12 @@ def get_seeds():
     elif not is_valid_uuid(player_uuid):
         return jsonify({'error': 'player_uuid is not valid'})
     
-    return jsonify({'seeds': getters.get_seeds(player_uuid)})
+    try:
+        seeds = getters.get_seeds(player_uuid)
+    except getters.UUIDNotFoundException as e:
+        return jsonify({'error': str(e)})
+    
+    return jsonify({'seeds': seeds})
 
 @app.route('/get_products', methods=['GET'])
 def get_products():
@@ -65,7 +80,12 @@ def get_products():
     elif not is_valid_uuid(player_uuid):
         return jsonify({'error': 'player_uuid is not valid'})
     
-    return jsonify({'products': getters.get_products(player_uuid)})
+    try:
+        products = getters.get_products(player_uuid)
+    except getters.UUIDNotFoundException as e:
+        return jsonify({'error': str(e)})
+    
+    return jsonify({'products': products})
 
 @app.route('/get_product_value', methods=['GET'])
 def get_product_value():
@@ -79,7 +99,12 @@ def get_product_value():
     elif not is_valid_uuid(player_uuid):
         return jsonify({'error': 'player_uuid is not valid'})
     
-    return jsonify({'product_value': getters.get_product_value(player_uuid)})
+    try:
+        product_value = getters.get_product_value(player_uuid)
+    except getters.UUIDNotFoundException as e:
+        return jsonify({'error': str(e)})
+    
+    return jsonify({'product_value': product_value})
 
 @app.route('/get_net_worth', methods=['GET'])
 def get_net_worth():
@@ -93,7 +118,12 @@ def get_net_worth():
     elif not is_valid_uuid(player_uuid):
         return jsonify({'error': 'player_uuid is not valid'})
     
-    return jsonify({'net_worth': getters.get_net_worth(player_uuid)})
+    try:
+        net_worth = getters.get_net_worth(player_uuid)
+    except getters.UUIDNotFoundException as e:
+        return jsonify({'error': str(e)})
+    
+    return jsonify({'net_worth': net_worth})
 
 if __name__ == '__main__':
     app.run()
