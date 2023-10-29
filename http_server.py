@@ -31,6 +31,25 @@ def get_plot_size():
     
     return jsonify({'plot_size': plot_size})
 
+@app.route('/get_plots', methods=['GET'])
+def get_plots():
+    if request.method != 'GET':
+        return jsonify({'error': 'invalid request method'})
+    
+    player_uuid = request.args.get('player_uuid')
+
+    if player_uuid is None:
+        return jsonify({'error': 'player_uuid not provided'})
+    elif not is_valid_uuid(player_uuid):
+        return jsonify({'error': 'player_uuid is not valid'})
+    
+    try:
+        plots = getters.get_plots(player_uuid)
+    except getters.UUIDNotFoundException as e:
+        return jsonify({'error': str(e)})
+    
+    return jsonify({'plots': plots})
+
 @app.route('/get_money', methods=['GET'])
 def get_money():
     if request.method != 'GET':
