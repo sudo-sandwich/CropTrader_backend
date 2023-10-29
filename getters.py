@@ -29,6 +29,10 @@ def get_product_value(player_uuid: str):
     response = sb_client.supabase.table('player_data').select('product_value').eq('id', player_uuid).execute()
     return response.data[0]['product_value']
 
-# def get_net_value(player_uuid: str):
-#     ''''''
-
+def get_net_value(player_uuid: str):
+    sum = 0
+    my_values = get_product_value(str)
+    my_products = get_products(str)
+    for i in range(len(my_values)):
+        sum = sum + my_values[i] * my_products[i]
+    return sum + get_money(str)
