@@ -1,18 +1,19 @@
 from datetime import datetime, timedelta, timezone
+import random
 
 import constants
 import player_exceptions
 import sb_client
 
-supabase = sb_client.create_supabase_client()
+#supabase = sb_client.create_supabase_client()
 
 # births a new farmer into this world. in other words, creates a new player account.
 def create_farmer():
-    ''''''
+    ''''''    
 
 # plants any number of seeds to an empty plot.
 def plant(player_uuid: str, plot_id: int, num_seeds: int, seed_id: int) -> {}:
-    response = supabase.table('player_data').select('plot_size', 'seeds', f'plot_{plot_id}_num', f'plot_{plot_id}_end').eq('id', player_uuid).execute()
+    response = sb_client.supabase.table('player_data').select('plot_size', 'seeds', f'plot_{plot_id}_num', f'plot_{plot_id}_end').eq('id', player_uuid).execute()
 
     if num_seeds > response.data[0]['plot_size']:
         raise player_exceptions.PlotNotLargeEnoughException(f'Plot is not large enough. Max size: {response.data[0]['plot_size']}')
@@ -25,7 +26,7 @@ def plant(player_uuid: str, plot_id: int, num_seeds: int, seed_id: int) -> {}:
     new_seed_count[seed_id] -= num_seeds
     end_time = datetime.now(timezone.utc) + timedelta(seconds=constants.SEED_CONSTANTS[seed_id]['grow_time_sec'])
     end_time_iso = end_time.isoformat()
-    response = supabase.table('player_data').update({
+    response = sb_client.supabase.table('player_data').update({
         'seeds': new_seed_count,
         f'plot_{plot_id}_type': seed_id, 
         f'plot_{plot_id}_num': num_seeds, 
@@ -33,8 +34,8 @@ def plant(player_uuid: str, plot_id: int, num_seeds: int, seed_id: int) -> {}:
         }).eq('id', player_uuid).execute()
 
 # harvests a complete plot and adds products/seeds to a player's inventory.
-def harvest(player_uuid: str, plot_id: int) -> {}:
-    response = supabase.table('player_data').select('seeds', 'products', f'plot_{plot_id}_type', f'plot_{plot_id}_num', f'plot_{plot_id}_end').execute()
+def harvest(player_uuid: str, plot_id: int):
+    response = sb_client.supabase.table('player_data').select('seeds', 'products', f'plot_{plot_id}_type', f'plot_{plot_id}_num', f'plot_{plot_id}_end').execute()
 
     if response.data[0][f'plot_{plot_id}_num'] == 0:
         raise player_exceptions.PlotNotEmptyException(f'Plot {plot_id} is empty.')
@@ -47,7 +48,7 @@ def harvest(player_uuid: str, plot_id: int) -> {}:
     new_product_count = response.data[0]['products']
     new_product_count[response.data[0][f'plot_{plot_id}_type']] += response.data[0][f'plot_{plot_id}_num']
 
-    response = supabase.table('player_data').update({
+    response = sb_client.supabase.table('player_data').update({
         'seeds': new_seed_count,
         'products': new_product_count,
         f'plot_{plot_id}_num': 0
@@ -55,14 +56,14 @@ def harvest(player_uuid: str, plot_id: int) -> {}:
 
 # sells a single product.
 def sell(player_uuid: str, product_id: int):
-    response = supabase.table('player_data').select('products', 'product_value', 'money').eq('id', player_uuid).execute()
+    response = sb_client.supabase.table('player_data').select('products', 'product_value', 'money').eq('id', player_uuid).execute()
 
     if response.data[0]['products'][product_id] == 0:
         raise player_exceptions.NotEnoughProductsException(f'Player does not have enough products. id: {product_id}')
 
     new_product_count = response.data[0]['products']
     new_product_count[product_id] -= 1
-    new_money_count = response.data[0]['money'] + constants.PRODUCT_CONSTANTS[product_id]['value'] * response.data[0]['product_value'][product_id]
+    new_money_count = response.data[0]['money'] + constants.SEED_CONSTANTS[product_id]['value'] * response.data[0]['product_value'][product_id]
     new_product_value = response.data[0]['product_value']
     for i in range(len(response.data[0]['product_value'])):
         if i == product_id:
@@ -71,7 +72,7 @@ def sell(player_uuid: str, product_id: int):
             new_product_value[i] += 0.01
         new_product_value[i] = max(0, min(1, new_product_value[i]))
 
-    response = supabase.table('player_data').update({
+    response = sb_client.supabase.table('player_data').update({
         'products': new_product_count,
         'product_value': new_product_value,
         'money': new_money_count
@@ -79,15 +80,70 @@ def sell(player_uuid: str, product_id: int):
 
 # buys a single mystery seed.
 def buy_mystery_seed(player_uuid: str):
-    response = supabase.table('player_data').select('money', 'seeds').eq('id', player_uuid).execute()
+    response = sb_client.supabase.table('player_data').select('money', 'seeds').eq('id', player_uuid).execute()
 
     if response.data[0]['money'] < constants.MYSTERY_SEED_COST:
         raise player_exceptions.NotEnoughMoneyException(f'Player does not have enough money. Cost: {constants.MYSTERY_SEED_COST}')
+    
+    random_selection = random.random() * constants.SEED_TOTAL_WEIGHT
+    current_seed_id = 0
+    while random_selection > constants.SEED_CONSTANTS[current_seed_id]['weight']:
+        random_selection -= constants.SEED_CONSTANTS[current_seed_id]['weight']
+        seed_id += 1
+    new_seed_count = response.data[0]['seeds']
+    new_seed_count[current_seed_id] += 1
+    new_money = response.data[0]['money'] - constants.MYSTERY_SEED_COST
+
+    response = sb_client.supabase.table('player_data').update({
+        'seeds': new_seed_count,
+        'money': new_money
+        }).eq('id', player_uuid).execute()
 
 # upgrades all plots to a larger size.
 def upgrade_plot(player_uuid: str):
-    ''''''
+    response = sb_client.supabase.table('player_data').select('money', 'plot_size').eq('id', player_uuid).execute()
+
+    upgrade_index = response.data[0]['plot_size'] / constants.PLOT_SIZE_UPGRADE_INCREMENT - 1
+
+    if upgrade_index >= len(constants.PLOT_UPGRADE_COSTS):
+        raise player_exceptions.MaximumPlotSizeException(f'Player plot size is already at maximum. Size: {response.data[0]['plot_size']}')
+
+    upgrade_cost = constants.PLOT_UPGRADE_COSTS[upgrade_index]
+
+    if response.data[0]['money'] < upgrade_cost:
+        raise player_exceptions.NotEnoughMoneyException(f'Player does not have enough money. Cost: {upgrade_cost}')
+
+    new_money = response.data[0]['money'] - upgrade_cost
+    new_plot_size = response.data[0]['plot_size'] + constants.PLOT_SIZE_UPGRADE_INCREMENT
+
+    response = sb_client.supabase.table('player_data').update({
+        'money': new_money,
+        'plot_size': new_plot_size
+        }).eq('id', player_uuid).execute()
 
 # trades seeds with another player.
 def trade(player1_uuid: str, player2_uuid: str, seeds1: [], seeds2: []):
-    ''''''
+    response1 = sb_client.supabase.table('player_data').select('seeds').eq('id', player1_uuid).execute()
+    response2 = sb_client.supabase.table('player_data').select('seeds').eq('id', player2_uuid).execute()
+
+    for i in range(len(seeds1)):
+        if seeds1[i] > response1.data[0]['seeds'][i]:
+            raise player_exceptions.NotEnoughSeedsException(f'Player 1 does not have enough seeds. id: {i}')
+        if seeds2[i] > response2.data[0]['seeds'][i]:
+            raise player_exceptions.NotEnoughSeedsException(f'Player 2 does not have enough seeds. id: {i}')
+    
+    new_seeds1 = response1.data[0]['seeds']
+    new_seeds2 = response2.data[0]['seeds']
+
+    for i in range(len(seeds1)):
+        new_seeds1[i] -= seeds1[i]
+        new_seeds2[i] += seeds1[i]
+        new_seeds1[i] += seeds2[i]
+        new_seeds2[i] -= seeds2[i]
+    
+    response1 = sb_client.supabase.table('player_data').update({
+        'seeds': new_seeds1
+        }).eq('id', player1_uuid).execute()
+    response2 = sb_client.supabase.table('player_data').update({
+        'seeds': new_seeds2
+        }).eq('id', player2_uuid).execute()
