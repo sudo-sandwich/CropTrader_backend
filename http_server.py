@@ -1,12 +1,13 @@
 from flask import Flask, request, jsonify
+import uuid
 
 import getters
 
 app = Flask(__name__)
 
-def is_valid_uuid(uuid: str):
+def is_valid_uuid(uuid_str: str):
     try:
-        uuid_obj = uuid.UUID(uuid)
+        uuid_obj = uuid.UUID(uuid_str)
         return True
     except ValueError:
         return False
@@ -40,7 +41,7 @@ def get_money():
     return jsonify({'money': getters.get_money(player_uuid)})
 
 @app.route('/get_seeds', methods=['GET'])
-def get_money():
+def get_seeds():
     if request.method != 'GET':
         return jsonify({'error': 'invalid request method'})
     
