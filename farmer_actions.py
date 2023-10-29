@@ -9,7 +9,18 @@ import sb_client
 
 # births a new farmer into this world. in other words, creates a new player account.
 def create_farmer():
-    ''''''    
+    random_selection = random.random() * constants.ADVANCED_SEED_TOTAL_WEIGHT
+    start_advanced_seed_id = constants.NUM_BASIC_SEEDS
+    while random_selection > constants.SEED_CONSTANTS[start_advanced_seed_id]['weight']:
+        random_selection -= constants.SEED_CONSTANTS[start_advanced_seed_id]['weight']
+        start_advanced_seed_id += 1
+    
+    start_seed_count = [5,5,5,0,0,0,0,0,0,0]
+    start_seed_count[start_advanced_seed_id] = 1
+
+    response = sb_client.supabase.table('player_data').insert({
+        'seeds': start_seed_count,
+    }).execute()
 
 # plants any number of seeds to an empty plot.
 def plant(player_uuid: str, plot_id: int, num_seeds: int, seed_id: int) -> {}:
@@ -31,7 +42,7 @@ def plant(player_uuid: str, plot_id: int, num_seeds: int, seed_id: int) -> {}:
         f'plot_{plot_id}_type': seed_id, 
         f'plot_{plot_id}_num': num_seeds, 
         f'plot_{plot_id}_end': end_time_iso
-        }).eq('id', player_uuid).execute()
+    }).eq('id', player_uuid).execute()
 
 # harvests a complete plot and adds products/seeds to a player's inventory.
 def harvest(player_uuid: str, plot_id: int):
@@ -52,7 +63,7 @@ def harvest(player_uuid: str, plot_id: int):
         'seeds': new_seed_count,
         'products': new_product_count,
         f'plot_{plot_id}_num': 0
-        }).eq('id', player_uuid).execute()
+    }).eq('id', player_uuid).execute()
 
 # sells a single product.
 def sell(player_uuid: str, product_id: int):
@@ -76,7 +87,7 @@ def sell(player_uuid: str, product_id: int):
         'products': new_product_count,
         'product_value': new_product_value,
         'money': new_money_count
-        }).eq('id', player_uuid).execute()
+    }).eq('id', player_uuid).execute()
 
 # buys a single mystery seed.
 def buy_mystery_seed(player_uuid: str):
@@ -97,7 +108,7 @@ def buy_mystery_seed(player_uuid: str):
     response = sb_client.supabase.table('player_data').update({
         'seeds': new_seed_count,
         'money': new_money
-        }).eq('id', player_uuid).execute()
+    }).eq('id', player_uuid).execute()
 
 # upgrades all plots to a larger size.
 def upgrade_plot(player_uuid: str):
@@ -119,7 +130,7 @@ def upgrade_plot(player_uuid: str):
     response = sb_client.supabase.table('player_data').update({
         'money': new_money,
         'plot_size': new_plot_size
-        }).eq('id', player_uuid).execute()
+    }).eq('id', player_uuid).execute()
 
 # trades seeds with another player.
 def trade(player1_uuid: str, player2_uuid: str, seeds1: [], seeds2: []):
@@ -143,7 +154,7 @@ def trade(player1_uuid: str, player2_uuid: str, seeds1: [], seeds2: []):
     
     response1 = sb_client.supabase.table('player_data').update({
         'seeds': new_seeds1
-        }).eq('id', player1_uuid).execute()
+    }).eq('id', player1_uuid).execute()
     response2 = sb_client.supabase.table('player_data').update({
         'seeds': new_seeds2
-        }).eq('id', player2_uuid).execute()
+    }).eq('id', player2_uuid).execute()
