@@ -1,23 +1,62 @@
 [
     {
-        "name": "Wheat",
+        "name": "Corn",
         "value": 100,
-        "seed_multiplier": 0.2,
         "grow_time_sec": 5,
-        "weight": 100
-    },
-    {
-        "name": "Carrot",
-        "value": 200,
-        "seed_multiplier": 0.3,
-        "grow_time_sec": 12,
-        "weight": 100
+        "weight": 200
     },
     {
         "name": "Potato",
+        "value": 200,
+        "grow_time_sec": 12,
+        "weight": 200
+    },
+    {
+        "name": "Wheat",
         "value": 400,
-        "seed_multiplier": 0.4,
+        "grow_time_sec": 30,
+        "weight": 200
+    },
+    {
+        "name": "Carrot",
+        "value": 800,
         "grow_time_sec": 30,
         "weight": 100
+    },
+    {
+        "name": "Watermelon",
+        "value": 400,
+        "grow_time_sec": 20,
+        "weight": 60
+    },
+    {
+        "name": "Pumpkin",
+        "value": 2000,
+        "grow_time_sec": 60,
+        "weight": 40
+    },
+    {
+        "name": "Tomato",
+        "value": 600,
+        "grow_time_sec": 25,
+        "weight": 30
+    },
+    {
+        "name": "Eggplant",
+        "value": 500,
+        "grow_time_sec": 20,
+        "weight": 20
+    },
+    {
+        "name": "Radish",
+        "value": 400,
+        "grow_time_sec": 15,
+        "weight": 10
+    },
+    {
+        "name": "Pepper",
+        "value": 900,
+        "grow_time_sec": 20,
+        "weight": 5
     }
 ]

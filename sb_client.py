@@ -7,3 +7,5 @@ def create_supabase_client() -> Client:
     
     supabase = create_client(supabase_data['supabase_url'], supabase_data['supabase_key'])
     return supabase
+
+supabase = create_supabase_client()
