@@ -1,0 +1,23 @@
+[
+    {
+        "name": "Wheat",
+        "value": 100,
+        "seed_multiplier": 0.2,
+        "grow_time_sec": 5,
+        "weight": 100
+    },
+    {
+        "name": "Carrot",
+        "value": 200,
+        "seed_multiplier": 0.3,
+        "grow_time_sec": 12,
+        "weight": 100
+    },
+    {
+        "name": "Potato",
+        "value": 400,
+        "seed_multiplier": 0.4,
+        "grow_time_sec": 30,
+        "weight": 100
+    }
+]

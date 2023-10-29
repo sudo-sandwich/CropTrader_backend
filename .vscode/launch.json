@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run crop_trader.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/crop_trader.py",
+            "console": "integratedTerminal"
+        }
+    ]
+}
