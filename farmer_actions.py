@@ -8,7 +8,7 @@ import sb_client
 
 # births a new farmer into this world. in other words, creates a new player account.
 def create_farmer(username: str, password: str):
-    hashed_password = encryption.register(password)
+    hashed_password, salt = encryption.register(password)
     
     random_selection = random.random() * constants.ADVANCED_SEED_TOTAL_WEIGHT
     start_advanced_seed_id = constants.NUM_BASIC_SEEDS
@@ -19,10 +19,13 @@ def create_farmer(username: str, password: str):
     start_seed_count = [5,5,5,0,0,0,0,0,0,0]
     start_seed_count[start_advanced_seed_id] = 1
 
+    string_data = salt.decode('utf-8')
+
     response = sb_client.supabase.table('player_data').insert({
         'username': username,
         'password': hashed_password,
         'seeds': start_seed_count,
+        'salt': string_data
     }).execute()
 
 # plants any number of seeds to an empty plot.

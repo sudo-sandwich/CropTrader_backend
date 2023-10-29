@@ -2,12 +2,10 @@ import sb_client
 import bcrypt
 
 # Register a new user
-def register(password):
+def register(password: str):
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
-    sb_client.supabase.table('player_data').insert({
-        'salt': salt})
-    return hashed_password
+    return hashed_password, salt
 
 # Authenticate an existing user
 def authenticate(uuid: str, password: str):
