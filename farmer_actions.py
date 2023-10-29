@@ -1,14 +1,15 @@
 from datetime import datetime, timedelta, timezone
 import random
 
+import encryption
 import constants
 import player_exceptions
 import sb_client
 
-#supabase = sb_client.create_supabase_client()
-
 # births a new farmer into this world. in other words, creates a new player account.
-def create_farmer(username: str):
+def create_farmer(username: str, password: str):
+    hashed_password = encryption.register(password)
+    
     random_selection = random.random() * constants.ADVANCED_SEED_TOTAL_WEIGHT
     start_advanced_seed_id = constants.NUM_BASIC_SEEDS
     while random_selection > constants.SEED_CONSTANTS[start_advanced_seed_id]['weight']:
@@ -20,7 +21,7 @@ def create_farmer(username: str):
 
     response = sb_client.supabase.table('player_data').insert({
         'username': username,
-        'password': 'asdf',
+        'password': hashed_password,
         'seeds': start_seed_count,
     }).execute()
 
