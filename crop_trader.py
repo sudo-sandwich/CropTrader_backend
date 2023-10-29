@@ -25,4 +25,4 @@ import getters
 # farmer_actions.create_farmer("Poe")
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='170.187.142.125', port=5000)
