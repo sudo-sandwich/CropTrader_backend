@@ -8,7 +8,7 @@ import sb_client
 #supabase = sb_client.create_supabase_client()
 
 # births a new farmer into this world. in other words, creates a new player account.
-def create_farmer():
+def create_farmer(username: str):
     random_selection = random.random() * constants.ADVANCED_SEED_TOTAL_WEIGHT
     start_advanced_seed_id = constants.NUM_BASIC_SEEDS
     while random_selection > constants.SEED_CONSTANTS[start_advanced_seed_id]['weight']:
@@ -19,6 +19,7 @@ def create_farmer():
     start_seed_count[start_advanced_seed_id] = 1
 
     response = sb_client.supabase.table('player_data').insert({
+        'username': username,
         'seeds': start_seed_count,
     }).execute()
 
