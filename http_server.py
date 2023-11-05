@@ -12,8 +12,27 @@ def is_valid_uuid(uuid_str: str):
     except ValueError:
         return False
 
+@app.route('/get_username', methods=['GET'])
+def flask_get_username():
+    if request.method != 'GET':
+        return jsonify({'error': 'invalid request method'})
+
+    player_uuid = request.args.get('player_uuid')
+
+    if player_uuid is None:
+        return jsonify({'error': 'player_uuid not provided'})
+    elif not is_valid_uuid(player_uuid):
+        return jsonify({'error': 'player_uuid is not valid'})
+
+    try:
+        username = getters.get_username(player_uuid)
+    except getters.UUIDNotFoundException as e:
+        return jsonify({'error': str(e)})
+
+    return jsonify({'username': username})
+
 @app.route('/get_plot_size', methods=['GET'])
-def get_plot_size():
+def flask_get_plot_size():
     if request.method != 'GET':
         return jsonify({'error': 'invalid request method'})
     
@@ -32,7 +51,7 @@ def get_plot_size():
     return jsonify({'plot_size': plot_size})
 
 @app.route('/get_plots', methods=['GET'])
-def get_plots():
+def flask_get_plots():
     if request.method != 'GET':
         return jsonify({'error': 'invalid request method'})
     
@@ -51,7 +70,7 @@ def get_plots():
     return jsonify({'plots': plots})
 
 @app.route('/get_money', methods=['GET'])
-def get_money():
+def flask_get_money():
     if request.method != 'GET':
         return jsonify({'error': 'invalid request method'})
     
@@ -70,7 +89,7 @@ def get_money():
     return jsonify({'money': money})
 
 @app.route('/get_seeds', methods=['GET'])
-def get_seeds():
+def flask_get_seeds():
     if request.method != 'GET':
         return jsonify({'error': 'invalid request method'})
     
@@ -89,11 +108,12 @@ def get_seeds():
     return jsonify({'seeds': seeds})
 
 @app.route('/get_products', methods=['GET'])
-def get_products():
+def flask_get_products():
     if request.method != 'GET':
         return jsonify({'error': 'invalid request method'})
     
     player_uuid = request.args.get('player_uuid')
+
     if player_uuid is None:
         return jsonify({'error': 'player_uuid not provided'})
     elif not is_valid_uuid(player_uuid):
@@ -107,7 +127,7 @@ def get_products():
     return jsonify({'products': products})
 
 @app.route('/get_product_value', methods=['GET'])
-def get_product_value():
+def flask_get_product_value():
     if request.method != 'GET':
         return jsonify({'error': 'invalid request method'})
     
@@ -126,7 +146,7 @@ def get_product_value():
     return jsonify({'product_value': product_value})
 
 @app.route('/get_net_worth', methods=['GET'])
-def get_net_worth():
+def flask_get_net_worth():
     if request.method != 'GET':
         return jsonify({'error': 'invalid request method'})
     
@@ -145,4 +165,4 @@ def get_net_worth():
     return jsonify({'net_worth': net_worth})
 
 if __name__ == '__main__':
-    app.run()
+    app.run('ssl_context=adhoc')

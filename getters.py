@@ -1,7 +1,13 @@
 import sb_client
 
 class UUIDNotFoundException(Exception):
-    bleh = 0
+    ''''''
+
+def get_username(player_uuid: str) -> str:
+    response = sb_client.supabase.table('player_data').select('username').eq('id', player_uuid).execute()
+    if not response.data:
+        raise UUIDNotFoundException(f'UUID {player_uuid} not found in database.')
+    return response.data[0]['username']
 
 def get_plot_size(player_uuid: str) -> int:
     response = sb_client.supabase.table('player_data').select('plot_size').eq('id', player_uuid).execute()

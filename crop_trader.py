@@ -29,4 +29,4 @@ import getters
 if __name__ == '__main__':
     with open('ip_port.json', 'r') as ip_port_json:
         ip_port = json.load(ip_port_json)
-    app.run(host=ip_port['ip'], port=ip_port['port'])
+    app.run(host=ip_port['ip'], port=ip_port['port'], ssl_context='adhoc')
