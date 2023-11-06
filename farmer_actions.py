@@ -6,8 +6,17 @@ import constants
 import player_exceptions
 import sb_client
 
+class UsernameAlreadyExistsException(Exception):
+    ''''''
+class UUIDNotFoundException(Exception):
+    ''''''
+
 # births a new farmer into this world. in other words, creates a new player account.
 def create_farmer(username: str, password: str):
+    response = sb_client.supabase.table('player_data').select('username').eq('username', username).execute()
+    if response.data:
+        raise UsernameAlreadyExistsException(f'Username {username} already exists.')
+
     hashed_password, salt = encryption.register(password)
     
     random_selection = random.random() * constants.ADVANCED_SEED_TOTAL_WEIGHT
@@ -32,7 +41,9 @@ def create_farmer(username: str, password: str):
 def plant(player_uuid: str, plot_id: int, num_seeds: int, seed_id: int) -> {}:
     response = sb_client.supabase.table('player_data').select('plot_size', 'seeds', f'plot_{plot_id}_num', f'plot_{plot_id}_end').eq('id', player_uuid).execute()
 
-    if num_seeds > response.data[0]['plot_size']:
+    if not response.data:
+        raise UUIDNotFoundException(f'UUID {player_uuid} not found in database.')
+    elif num_seeds > response.data[0]['plot_size']:
         raise player_exceptions.PlotNotLargeEnoughException(f'Plot is not large enough. Max size: {response.data[0]['plot_size']}')
     elif response.data[0]['seeds'][seed_id] < num_seeds:
         raise player_exceptions.NotEnoughSeedsException(f"Player does not have enough seeds. id: {seed_id}")
@@ -54,7 +65,9 @@ def plant(player_uuid: str, plot_id: int, num_seeds: int, seed_id: int) -> {}:
 def harvest(player_uuid: str, plot_id: int):
     response = sb_client.supabase.table('player_data').select('seeds', 'products', f'plot_{plot_id}_type', f'plot_{plot_id}_num', f'plot_{plot_id}_end').execute()
 
-    if response.data[0][f'plot_{plot_id}_num'] == 0:
+    if not response.data:
+        raise UUIDNotFoundException(f'UUID {player_uuid} not found in database.')
+    elif response.data[0][f'plot_{plot_id}_num'] == 0:
         raise player_exceptions.PlotNotEmptyException(f'Plot {plot_id} is empty.')
     elif response.data[0][f'plot_{plot_id}_end'] > datetime.now(timezone.utc).isoformat():
         raise player_exceptions.PlotNotReadyException(f'Plot {plot_id} is not ready.')
@@ -75,7 +88,9 @@ def harvest(player_uuid: str, plot_id: int):
 def sell(player_uuid: str, product_id: int):
     response = sb_client.supabase.table('player_data').select('products', 'product_value', 'money').eq('id', player_uuid).execute()
 
-    if response.data[0]['products'][product_id] == 0:
+    if not response.data:
+        raise UUIDNotFoundException(f'UUID {player_uuid} not found in database.')
+    elif response.data[0]['products'][product_id] == 0:
         raise player_exceptions.NotEnoughProductsException(f'Player does not have enough products. id: {product_id}')
 
     new_product_count = response.data[0]['products']
@@ -99,7 +114,9 @@ def sell(player_uuid: str, product_id: int):
 def buy_mystery_seed(player_uuid: str):
     response = sb_client.supabase.table('player_data').select('money', 'seeds').eq('id', player_uuid).execute()
 
-    if response.data[0]['money'] < constants.MYSTERY_SEED_COST:
+    if not response.data:
+        raise UUIDNotFoundException(f'UUID {player_uuid} not found in database.')
+    elif response.data[0]['money'] < constants.MYSTERY_SEED_COST:
         raise player_exceptions.NotEnoughMoneyException(f'Player does not have enough money. Cost: {constants.MYSTERY_SEED_COST}')
     
     random_selection = random.random() * constants.SEED_TOTAL_WEIGHT
@@ -122,7 +139,9 @@ def upgrade_plot(player_uuid: str):
 
     upgrade_index = response.data[0]['plot_size'] / constants.PLOT_SIZE_UPGRADE_INCREMENT - 1
 
-    if upgrade_index >= len(constants.PLOT_UPGRADE_COSTS):
+    if not response.data:
+        raise UUIDNotFoundException(f'UUID {player_uuid} not found in database.')
+    elif upgrade_index >= len(constants.PLOT_UPGRADE_COSTS):
         raise player_exceptions.MaximumPlotSizeException(f'Player plot size is already at maximum. Size: {response.data[0]['plot_size']}')
 
     upgrade_cost = constants.PLOT_UPGRADE_COSTS[upgrade_index]
@@ -142,6 +161,11 @@ def upgrade_plot(player_uuid: str):
 def trade(player1_uuid: str, player2_uuid: str, seeds1: [], seeds2: []):
     response1 = sb_client.supabase.table('player_data').select('seeds').eq('id', player1_uuid).execute()
     response2 = sb_client.supabase.table('player_data').select('seeds').eq('id', player2_uuid).execute()
+
+    if not response1.data:
+        raise UUIDNotFoundException(f'UUID {player1_uuid} not found in database.')
+    elif not response2.data:
+        raise UUIDNotFoundException(f'UUID {player2_uuid} not found in database.')
 
     for i in range(len(seeds1)):
         if seeds1[i] > response1.data[0]['seeds'][i]:

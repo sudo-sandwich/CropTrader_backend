@@ -1,7 +1,7 @@
 import json
 
 import farmer_actions
-from http_server import app
+from flask_server import app
 import player_exceptions
 import getters
 
